@@ -9,14 +9,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../include/main.h"
+
 #define PORT 8888
 
-static enum MHD_Result
+enum MHD_Result
 answer_to_connection(void *cls, struct MHD_Connection *connection,
                      const char *url, const char *method, const char *version,
                      const char *upload_data, size_t *upload_data_size,
                      void **req_cls) {
   const char *page = "<html><body>Hello again, browser!</body></html>";
+  // printf("%s\n", url);
+  read_file(url);
   struct MHD_Response *response;
   enum MHD_Result ret;
   (void)cls;              /* Unused. Silent compiler warning. */
@@ -46,5 +50,10 @@ int main(void) {
   (void)getchar();
 
   MHD_stop_daemon(daemon);
+  return 0;
+}
+
+char* read_file(char url[]) {
+  printf("%s\n", url);
   return 0;
 }

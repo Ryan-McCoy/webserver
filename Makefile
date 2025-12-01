@@ -4,7 +4,7 @@ INCLUDE=/usr/include
 OUT=bin/main
 
 $(OUT): src/main.c
-	$(CC) src/main.c -o $(OUT) -I$(INCLUDE)S -L$(LIB) -lmicrohttpd
+	$(CC) src/main.c -o $(OUT) -I$(INCLUDE) -Iinclude -L$(LIB) -lmicrohttpd
 
 run: $(OUT)
 	$(OUT)
