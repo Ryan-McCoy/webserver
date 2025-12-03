@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <sys/types.h>
 #ifndef _WIN32
 #include <sys/select.h>
@@ -8,19 +9,38 @@
 #include <microhttpd.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #include "../include/main.h"
 
 #define PORT 8888
 
-enum MHD_Result
-answer_to_connection(void *cls, struct MHD_Connection *connection,
-                     const char *url, const char *method, const char *version,
-                     const char *upload_data, size_t *upload_data_size,
-                     void **req_cls) {
-  const char *page = "<html><body>Hello again, browser!</body></html>";
-  // printf("%s\n", url);
-  read_file(url);
+enum MHD_Result answer_to_connection(void *cls,
+                                     struct MHD_Connection *connection,
+                                     const char *url, const char *method,
+                                     const char *version,
+                                     const char *upload_data,
+                                     size_t *upload_data_size, void **req_cls) {
+
+  
+  char processedurl[256] = {};
+  strcat(processedurl, ".");
+  strcat(processedurl, url);
+  unsigned long i = strlen(processedurl);
+  // while (isspace(processedurl[i])) {
+  //   i--;
+  // }
+  i -= 1;
+  char slash = '/';
+  if (processedurl[i] == slash) {
+    char index[11] = "index.html";
+    strcat(processedurl, index);
+  }
+  printf("Processed URL: %s\n", processedurl);
+  printf("Last char: %c\n", processedurl[i]);
+
+  const char *page = read_file(processedurl);
   struct MHD_Response *response;
   enum MHD_Result ret;
   (void)cls;              /* Unused. Silent compiler warning. */
@@ -34,7 +54,6 @@ answer_to_connection(void *cls, struct MHD_Connection *connection,
   response = MHD_create_response_from_buffer_static(strlen(page), page);
   ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
   MHD_destroy_response(response);
-
   return ret;
 }
 
@@ -53,7 +72,19 @@ int main(void) {
   return 0;
 }
 
-char* read_file(char url[]) {
+char* read_file(const char url[]) {
   printf("%s\n", url);
-  return 0;
+  FILE *file = fopen(url, "r");
+  if (!file) {
+    return "Unknown error";
+  }
+  fseek(file, 0L, SEEK_END);
+  int size = ftell(file);
+
+  rewind(file);
+  char *data = malloc(size + 1);
+
+  fread(data, size + 1, size, file);
+  fclose(file);
+  return data;
 }

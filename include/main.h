@@ -1,1 +1,1 @@
-char* read_file(char url[]);
+char* read_file(const char url[]);
