@@ -25,31 +25,43 @@ enum MHD_Result answer_to_connection(void *cls,
                                      const char *upload_data,
                                      size_t *upload_data_size, void **req_cls) {
 
-  
-  char processedurl[256] = {};
-  strcat(processedurl, ".");
-  strcat(processedurl, url);
-  char slash = '/';
-  // if (processedurl[i] == slash) {
-  //   char index[11] = "index.html";
-  //   strcat(processedurl, index);
-  // }
-  if (is_dir(processedurl) == 1) {
-    unsigned long i = strlen(processedurl);
-    i -= 1;
-    char slash = '/';
-    char slash_2[] = {'/', '\0'};
-    printf("Last char: %c\n", processedurl[i]);
-    char index[11] = "index.html";
-    if (processedurl[i] != slash) {
-      strcat(processedurl, slash_2);
-    }
-    strcat(processedurl, index);
-  }
-  printf("Processed URL: %s\n", processedurl);
-  
 
-  const char *page = read_file(processedurl);
+  char *page;
+  int status;
+  if (!strcmp(method, MHD_HTTP_METHOD_GET)) {
+    char processedurl[256] = {};
+    strcat(processedurl, ".");
+    strcat(processedurl, url);
+    char slash = '/';
+    if (is_dir(processedurl) == 1) {
+      unsigned long i = strlen(processedurl);
+      i -= 1;
+      char slash = '/';
+      char slash_2[] = {'/', '\0'};
+      printf("Last char: %c\n", processedurl[i]);
+      char index[11] = "index.html";
+      if (processedurl[i] != slash) {
+        strcat(processedurl, slash_2);
+      }
+      strcat(processedurl, index);
+    }
+    printf("Processed URL: %s\n", processedurl);
+    if (is_allowed(processedurl) == 1) {
+      page = read_file(processedurl);
+      if (!strcmp(page, "ERR"))
+        status = MHD_HTTP_NOT_FOUND;
+      else
+        status = MHD_HTTP_OK;
+    }
+    else {
+      page = "403 Forbidden";
+      status = MHD_HTTP_FORBIDDEN;
+    }
+  } else {
+    status = MHD_HTTP_METHOD_NOT_ALLOWED;
+    page = "405 Method not allowed \n The server only supports GET requests.";
+  }
+  
   struct MHD_Response *response;
   enum MHD_Result ret;
   (void)cls;              /* Unused. Silent compiler warning. */
@@ -61,7 +73,7 @@ enum MHD_Result answer_to_connection(void *cls,
   (void)req_cls;          /* Unused. Silent compiler warning. */
 
   response = MHD_create_response_from_buffer_static(strlen(page), page);
-  ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+  ret = MHD_queue_response(connection, status, response);
   MHD_destroy_response(response);
   return ret;
 }
@@ -85,7 +97,7 @@ char* read_file(const char url[]) {
   printf("%s\n", url);
   FILE *file = fopen(url, "r");
   if (!file) {
-    return "Unknown error";
+    return "ERR";
   }
   fseek(file, 0L, SEEK_END);
   int size = ftell(file);
@@ -107,4 +119,12 @@ int is_dir(const char url[]) {
     return 0;
   }
   else return -1;
+}
+int is_allowed(const char url[]) {
+  char list[1][3] = {".."};
+  for (int i = 0; i < sizeof(list) / sizeof(list[0]); ++i) {
+    if (strstr(url, list[i]))
+      return 0;
+  }
+  return 1;
 }
