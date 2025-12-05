@@ -1,1 +1,2 @@
-char* read_file(const char url[]);
+char *read_file(const char url[]);
+int is_dir(const char url[]);

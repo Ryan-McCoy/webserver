@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <ctype.h>
 #include <sys/types.h>
 #ifndef _WIN32
@@ -11,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <dirent.h>
 
 #include "../include/main.h"
 
@@ -27,18 +29,25 @@ enum MHD_Result answer_to_connection(void *cls,
   char processedurl[256] = {};
   strcat(processedurl, ".");
   strcat(processedurl, url);
-  unsigned long i = strlen(processedurl);
-  // while (isspace(processedurl[i])) {
-  //   i--;
-  // }
-  i -= 1;
   char slash = '/';
-  if (processedurl[i] == slash) {
+  // if (processedurl[i] == slash) {
+  //   char index[11] = "index.html";
+  //   strcat(processedurl, index);
+  // }
+  if (is_dir(processedurl) == 1) {
+    unsigned long i = strlen(processedurl);
+    i -= 1;
+    char slash = '/';
+    char slash_2[] = {'/', '\0'};
+    printf("Last char: %c\n", processedurl[i]);
     char index[11] = "index.html";
+    if (processedurl[i] != slash) {
+      strcat(processedurl, slash_2);
+    }
     strcat(processedurl, index);
   }
   printf("Processed URL: %s\n", processedurl);
-  printf("Last char: %c\n", processedurl[i]);
+  
 
   const char *page = read_file(processedurl);
   struct MHD_Response *response;
@@ -87,4 +96,15 @@ char* read_file(const char url[]) {
   fread(data, size + 1, size, file);
   fclose(file);
   return data;
+}
+int is_dir(const char url[]) {
+  DIR *directory = opendir(url);
+  if (directory != NULL) {
+    printf("Directory");
+    return 1;
+  } else if (errno == ENOTDIR) {
+    printf("Not directory");
+    return 0;
+  }
+  else return -1;
 }
