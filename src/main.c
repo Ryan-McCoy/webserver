@@ -38,14 +38,18 @@ enum MHD_Result answer_to_connection(void *cls,
       i -= 1;
       char slash = '/';
       char slash_2[] = {'/', '\0'};
+#ifdef DEBUG
       printf("Last char: %c\n", processedurl[i]);
+#endif
       char index[11] = "index.html";
       if (processedurl[i] != slash) {
         strcat(processedurl, slash_2);
       }
       strcat(processedurl, index);
     }
+#ifdef DEBUG
     printf("Processed URL: %s\n", processedurl);
+#endif
     if (is_allowed(processedurl) == 1) {
       page = read_file(processedurl);
       if (!strcmp(page, "ERR"))
@@ -93,8 +97,10 @@ int main(void) {
   return 0;
 }
 
-char* read_file(const char url[]) {
+char *read_file(const char url[]) {
+#ifdef DEBUG
   printf("%s\n", url);
+#endif
   FILE *file = fopen(url, "r");
   if (!file) {
     return "ERR";
@@ -112,10 +118,14 @@ char* read_file(const char url[]) {
 int is_dir(const char url[]) {
   DIR *directory = opendir(url);
   if (directory != NULL) {
+#ifdef DEBUG
     printf("Directory");
+#endif
     return 1;
   } else if (errno == ENOTDIR) {
+#ifdef DEBUG
     printf("Not directory");
+#endif
     return 0;
   }
   else return -1;

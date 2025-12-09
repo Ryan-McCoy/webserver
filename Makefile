@@ -2,9 +2,15 @@ CC=gcc
 LIB=/usr/lib
 INCLUDE=/usr/include
 OUT=bin/main
+DEBUG=bin/debug
 
 $(OUT): src/main.c
 	$(CC) src/main.c -o $(OUT) -I$(INCLUDE) -Iinclude -L$(LIB) -lmicrohttpd
 
-run: $(OUT)
-	$(OUT)
+$(DEBUG): src/main.c
+	$(CC) src/main.c -o $(DEBUG) -I$(INCLUDE) -Iinclude -L$(LIB) -lmicrohttpd  -DDEBUG
+
+run: $(DEBUG)
+	$(DEBUG)
+
+debug: $(DEBUG)
