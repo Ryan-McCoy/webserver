@@ -1,9 +1,0 @@
-{
-    "makefile.launchConfigurations": [
-        {
-            "cwd": "/Users/RyanMcCoy/webserver/bin",
-            "binaryPath": "/Users/RyanMcCoy/webserver/bin/main",
-            "binaryArgs": []
-        }
-    ]
-}
